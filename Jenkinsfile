@@ -1,4 +1,4 @@
-def dockerhub = 'inyilis/kbackend'
+def dockerhub = 'inyilis/backend'
 def image_name = "${dockerhub}:${BRANCH_NAME}"
 def builder 
 
@@ -23,7 +23,7 @@ pipeline {
         stage("Build docker image")  {
             steps {
                 script {
-                    builder = docker.build(image_name, "--no-cache .")
+                    builder = docker.build(image_name, "--no-cache .") 
                 }
             }
         }
@@ -60,30 +60,14 @@ pipeline {
                         sshPublisher (
                             publishers: [
                                 sshPublisherDesc(
-                                configName: 'k8s',
-                                verbose: true,
-                                transfers: [
-                                    sshTransfer(
-                                        execCommand: "cd /home/k8s/app; echo ' ' | sudo -S kubectl apply -f dev.yml",
-                                        execTimeout: 1200000
-                                    )
-                                ] 
-                                )
-                            ]
-                        )
-                    }
-                    if(BRANCH_NAME == 'main'){
-                        sshPublisher (
-                            publishers: [
-                                sshPublisherDesc(
-                                configName: 'k8s',
-                                verbose: true,
-                                transfers: [
-                                    sshTransfer(
-                                        execCommand: "cd /home/k8s/app; echo ' ' | sudo -S kubectl apply -f prod.yml",
-                                        execTimeout: 1200000
-                                    )
-                                ] 
+                                    configName: 'inyildev',
+                                    verbose: true,
+                                    transfers: [
+                                        sshTransfer(
+                                            execCommand: "docker pull ${image_name}; cd /home/inyil/app; docker-compose up -d",
+                                            execTimeout: 1200000
+                                        )
+                                    ] 
                                 )
                             ]
                         )
